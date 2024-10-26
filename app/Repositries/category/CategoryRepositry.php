@@ -4,6 +4,7 @@ namespace App\Repositries\category;
 
 use App\Http\Helpers\Helper;
 use App\Models\Category;
+use App\Models\CompanyInfo;
 use App\Models\Country;
 use App\Models\Slider;
 use App\Traits\HandleFiles;
@@ -179,5 +180,84 @@ class CategoryRepositry implements CategoryInterface
             return Helper::errorWithData($e->getMessage(),[]);
         }
 
+    }
+
+    public function saveCompanyInfo($request)
+    {
+
+        try {
+            DB::beginTransaction();
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'latitude' => 'required|string|max:255',
+                'langitude' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+            ]);
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
+
+            $id=1;
+            $role = CompanyInfo::updateOrCreate(
+                [
+                    'id' => $id
+                ],
+                [
+                    'company_name' => $request->name,
+                    'latitude' => $request->latitude,
+                    'langitude' => $request->langitude,
+                    'address' => $request->address,
+
+                ]
+            );
+
+            ($id==0)?$message = __('translation.record_created'): $message =__('translation.record_updated');
+            DB::commit();
+
+
+            return Helper::success($role, $message);
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),[]);
+        }
+    }
+
+    public function saveCategory($request)
+    {
+
+        try {
+            DB::beginTransaction();
+            $validator = Validator::make($request->all(), [
+                'title' => 'required|string|max:255',
+
+            ]);
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
+
+            $id=0;
+            $role = Category::updateOrCreate(
+                [
+                    'id' => $id
+                ],
+                [
+                    'title' => $request->title,
+                    'image' => 'abc',
+                ]
+            );
+
+            ($id==0)?$message = __('translation.record_created'): $message =__('translation.record_updated');
+            DB::commit();
+
+
+            return Helper::success($role, $message);
+        } catch (ValidationException $validationException) {
+            DB::rollBack();
+            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Helper::errorWithData($e->getMessage(),[]);
+        }
     }
 }

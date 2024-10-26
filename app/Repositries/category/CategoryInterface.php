@@ -15,5 +15,8 @@ interface CategoryInterface
     public function getAllSliders();
     public function getAllCategoriesWithProducts();
 
+    public function saveCompanyInfo($request);
+    public function saveCategory($request);
+
 
 }

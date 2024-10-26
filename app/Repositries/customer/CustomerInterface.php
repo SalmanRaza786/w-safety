@@ -11,6 +11,8 @@ interface CustomerInterface
     public function deletecustomer($id);
     public function customerSave($request,$id);
     public function getAllCustomers();
+    public function subscribeUserCategory($request);
+    public function getSubscribedCategory($userId);
 
 
 

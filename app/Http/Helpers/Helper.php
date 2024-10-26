@@ -543,9 +543,14 @@ class Helper
 
 
     public static function haversineGreatCircleDistance($lat2, $lon2, $earthRadius = 6371) {
-        $company=CompanyInfo::first();
 
-        $lat1=$company->latitude;
+
+        if(!$company=CompanyInfo::first()){
+           return 404;
+
+        }
+
+           $lat1=$company->latitude;
         $lon1=$company->langitude;
 
 

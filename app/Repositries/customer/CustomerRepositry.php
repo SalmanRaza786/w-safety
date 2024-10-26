@@ -6,6 +6,7 @@ use App\Http\Helpers\Helper;
 use App\Models\Admin;
 use App\Models\LoadType;
 use App\Models\User;
+use App\Models\UserCategory;
 use App\Traits\HandleFiles;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -84,9 +85,6 @@ class CustomerRepositry implements CustomerInterface {
 
 
             return Helper::success($load, $message);
-        } catch (ValidationException $validationException) {
-            DB::rollBack();
-            return Helper::errorWithData($validationException->errors()->first(), $validationException->errors());
         } catch (\Exception $e) {
             DB::rollBack();
             return Helper::errorWithData($e->getMessage(),[]);
@@ -128,6 +126,45 @@ class CustomerRepositry implements CustomerInterface {
         }
 
     }
+    public function subscribeUserCategory($request)
+    {
+        try {
+
+            $load = UserCategory::updateOrCreate(
+                [
+                    'user_id' => $request->userId,
+                    'cat_id' => $request->cat_id,
+                ],
+                [
+                    'user_id' => $request->userId,
+                    'cat_id' => $request->cat_id,
+                    'is_subscribed' => $request->is_subscribed,
+                ]
+            );
+
+      $message = __('translation.record_created');
+
+            return Helper::success($load, $message);
+        } catch (\Exception $e) {
+
+            return Helper::errorWithData($e->getMessage(),[]);
+        }
+    }
+
+    public function getSubscribedCategory($userId)
+    {
+        try {
+
+            $qry= UserCategory::query();
+            $qry=$qry->with('category');
+            $qry=$qry->get();
+            return Helper::success($qry,'User categories found');
+        } catch (\Exception $e) {
+
+            return Helper::errorWithData($e->getMessage(),[]);
+        }
+    }
+
 
 }
 
