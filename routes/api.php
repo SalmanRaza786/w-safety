@@ -18,6 +18,8 @@ use App\Http\Controllers\Api\OrderController;
         Route::any('/delete-user', [AuthController::class, 'deleteProfile']);
         Route::post('/subs-cat', [AuthController::class, 'subsCat']);
         Route::post('/get-user-subscribed-categories', [AuthController::class, 'getUserSubscribedCategories']);
+        Route::post('/send-otp', [AuthController::class, 'sendOtp']);
+        Route::post('/otp-verify', [AuthController::class, 'otpVerify']);
 
   });
 

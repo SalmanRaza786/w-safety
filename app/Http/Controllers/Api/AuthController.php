@@ -12,6 +12,7 @@ use App\Models\DeviceToken;
 use App\Models\Student;
 use App\Models\User;
 use App\Repositries\customer\CustomerInterface;
+use App\Repositries\otp\OtpInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -20,9 +21,11 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     private $customer;
+    private $otp;
 
-    public function __construct(CustomerInterface $customer) {
+    public function __construct(CustomerInterface $customer,OtpInterface $otp) {
         $this->customer = $customer;
+        $this->otp = $otp;
 
     }
 
@@ -329,6 +332,68 @@ class AuthController extends Controller
             return response()->json(['message' => $e], 400);
 
         }
+    }
+
+    public function sendOtp(Request $request)
+    {
+        try {
+            $request->all();
+            if(!$user=User::find($request->userId)){
+                return  Helper::createAPIResponce(true,400,'Invalid user id',$request->all());
+            }
+
+            $res=$this->otp->sendOtp($user);
+            if($res['status']){
+                return  Helper::createAPIResponce(false,200,$res->get('message'),$res);
+            }else{
+                return  Helper::createAPIResponce(true,400,$res['message'],[]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e], 400);
+
+        }
+    }
+
+    public function otpVerify(Request $request)
+    {
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'traffic_id' => 'required|exists:user_otps,traffic_id',
+            ]);
+
+            if ($validator->fails())
+                return Helper::errorWithData($validator->errors()->first(), $validator->errors());
+
+            $otp=$request->digit1.$request->digit2.$request->digit3.$request->digit4;
+
+            /* Validation Logic */
+            $userOtp   = UserOtp::where('traffic_id', $request->traffic_id)->where('otp',$otp)->where('is_active',1)->where('is_verified',0)->first();
+
+            $now = now();
+            if (!$userOtp) {
+                return redirect()->back()->with('error', 'Otp incorrect');
+            }
+
+//         else if($userOtp && $now->isAfter($userOtp->expire_at)){
+//             return redirect()->back()->with('error', 'OTP expired');
+//
+//          }
+
+            $userOtp->is_verified=1;
+            $userOtp->is_active=2;
+            $userOtp->save();
+            if($request->type==1){
+                return redirect()->route('student.signup',['locale'=>App::currentLocale(),'traffic_id' => encrypt($request->traffic_id)]);
+            }else{
+                $student=  $this->student->createForgotPaswordToken($request->traffic_id);
+                return redirect()->route('student.reset.password', ['locale' => App::currentLocale(), 'token' => $student['token'], 'email' => $student['email']]);
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
+
     }
 
 

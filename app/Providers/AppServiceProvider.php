@@ -46,6 +46,8 @@ use App\Repositries\orderContact\OrderContactRepositry;
 
 use App\Repositries\orderStatus\OrderStatusInterface;
 use App\Repositries\orderStatus\OrderStatusRepositry;
+use App\Repositries\otp\OtpInterface;
+use App\Repositries\otp\OtpRepositry;
 use App\Repositries\packagingList\PackagingListInterface;
 use App\Repositries\packagingList\PackagingListRepositry;
 use App\Repositries\permissions\PermissionInterface;
@@ -91,6 +93,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProductInterface::class,ProductRepositry::class);
         $this->app->bind(CustomerInterface::class,CustomerRepositry::class);
         $this->app->bind(OrderInterface::class,OrderRepositry::class);
+        $this->app->bind(OtpInterface::class,OtpRepositry::class);
 
     }
 }
